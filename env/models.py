@@ -30,6 +30,7 @@ class Observation(BaseModel):
     task_id: str
     task_objective: str
     score_so_far: float
+    action_space: Optional[dict] = None
 
 class Action(BaseModel):
     action_type: Literal[

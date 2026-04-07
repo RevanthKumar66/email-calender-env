@@ -227,5 +227,14 @@ class EmailCalendarEnv:
             max_steps=self._task_data.get("max_steps", 50) if self._task_data else 50,
             task_id=self.task_id,
             task_objective=self._task_data.get("objective", "") if self._task_data else "",
-            score_so_far=score_so_far
+            score_so_far=score_so_far,
+            action_space={
+                "flag_email": "Highlight urgent messages (high reward for priority=urgent)",
+                "archive_email": "Dismiss spam/unimportant messages (penalty if urgent)",
+                "reply_email": "Respond to task-related emails (require reply_text)",
+                "delegate_email": "Pass tasks to others (matches colleague name in text)",
+                "schedule_meeting": "Add events to calendar (avoid time conflicts)",
+                "decline_meeting": "Reject calendar invites (ideal for low-priority requests)",
+                "no_op": "Finish or pause. Use when objective is completed."
+            }
         )
