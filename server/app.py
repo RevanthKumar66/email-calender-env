@@ -23,6 +23,7 @@ def root():
 def health():
     return {"status": "ok", "env": "email-calendar-env"}
 
+@app.post("/reset")
 @app.post("/env/reset")
 def reset(task_id: str = "easy"):
     env = EmailCalendarEnv(task_id=task_id)
@@ -31,6 +32,7 @@ def reset(task_id: str = "easy"):
     obs = env.reset()
     return {"session_id": session_id, "observation": obs.model_dump()}
 
+@app.post("/step/{session_id}")
 @app.post("/env/step/{session_id}")
 def step(session_id: str, action: Action):
     env = _envs.get(session_id)
@@ -39,6 +41,7 @@ def step(session_id: str, action: Action):
     result = env.step(action)
     return result.model_dump()
 
+@app.get("/state/{session_id}")
 @app.get("/env/state/{session_id}")
 def state(session_id: str):
     env = _envs.get(session_id)
@@ -46,6 +49,7 @@ def state(session_id: str):
         raise HTTPException(status_code=404, detail="Session not found.")
     return env.state()
 
+@app.post("/close/{session_id}")
 @app.post("/env/close/{session_id}")
 def close(session_id: str):
     env = _envs.get(session_id)
