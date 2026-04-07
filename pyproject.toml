@@ -7,7 +7,7 @@ name = "email-calendar-env"
 version = "0.1.0"
 description = "Email + Calendar RL Environment for OpenEnv"
 dependencies = [
-    "openenv>=0.2.0",
+    "openenv-core>=0.2.0",
     "fastapi",
     "uvicorn",
     "pydantic",
