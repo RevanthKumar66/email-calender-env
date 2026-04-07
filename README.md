@@ -1,3 +1,13 @@
+---
+title: Email Calendar Env
+emoji: 🧠
+colorFrom: blue
+colorTo: green
+sdk: docker
+pinned: false
+license: mit
+---
+
 # 🧠 Email + Calendar RL Environment 📅
 
 [![OpenEnv Compliant](https://img.shields.io/badge/OpenEnv-Compliant-green.svg)](https://github.com/meta-openenv)
@@ -39,7 +49,7 @@ graph TD
     G --> A
 ```
 
-## 📊 Example Performance
+## 📊 Performance
 
 The agent achieves **success=true** with optimized efficiency across all difficulty levels.
 
@@ -107,4 +117,4 @@ This project is optimized for Hugging Face Spaces using the Docker SDK.
 
 ---
 
-**Developed for the Meta OpenEnv Hackathon 2024.** 🚀
+**Developed for the Meta OpenEnv Hackathon.** 🚀
