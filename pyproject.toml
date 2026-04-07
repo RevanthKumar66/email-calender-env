@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "email-calendar-env"
+version = "0.1.0"
+description = "Email + Calendar RL Environment for OpenEnv"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "openai",
+    "python-dotenv",
+    "httpx",
+    "python-dateutil",
+    "faker"
+]
+
+[tool.setuptools]
+packages = ["env", "server"]
