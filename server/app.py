@@ -11,6 +11,14 @@ app = FastAPI(title="Email-Calendar OpenEnv", version="1.0.0")
 
 _envs: dict = {}
 
+@app.get("/")
+def root():
+    return {
+        "message": "Email + Calendar RL Environment is ONLINE",
+        "docs": "/docs",
+        "status": "ready"
+    }
+
 @app.get("/health")
 def health():
     return {"status": "ok", "env": "email-calendar-env"}
