@@ -58,7 +58,10 @@ def close(session_id: str):
         del _envs[session_id]
     return {"status": "closed"}
 
-if __name__ == "__main__":
+def main():
     import uvicorn
     port = int(os.getenv("PORT", 7860))
     uvicorn.run(app, host="0.0.0.0", port=port)
+
+if __name__ == "__main__":
+    main()
