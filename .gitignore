@@ -1,0 +1,23 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Project
+*.log
+run_output.txt
+test_system.py
+.ipynb_checkpoints
+
+# OS Files
+.DS_Store
+Thumbs.db
