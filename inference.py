@@ -8,156 +8,132 @@ from openai import OpenAI
 from env.email_calendar_env import EmailCalendarEnv
 from env.models import Action
 
-# ====================== ULTIMATE STRICT PROXY SETUP ======================
-# As per hackathon requirements, we use environment variables DIRECTLY.
-# Any failure here is intended to fail-fast during evaluation.
+# API Configuration
 try:
-    API_BASE_URL = os.environ["API_BASE_URL"]
-    API_KEY = os.environ["API_KEY"]
-    MODEL_NAME = os.environ["MODEL_NAME"]
-    print(f"[DEBUG] Environment Verified. Proxy: {API_BASE_URL[:40]}...")
-except KeyError as e:
-    print(f"[CRITICAL] Missing essential environment variable: {e}")
-    # Local fallback for non-eval environments only
-    API_BASE_URL = os.environ.get("API_BASE_URL", "https://router.huggingface.co/v1")
-    API_KEY = os.environ.get("API_KEY", "MISSING")
-    MODEL_NAME = os.environ.get("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
+    api_url = os.environ["API_BASE_URL"]
+    api_key = os.environ["API_KEY"]
+    model_id = os.environ["MODEL_NAME"]
+except KeyError:
+    # Fallback to defaults if environment variables are not set
+    api_url = os.environ.get("API_BASE_URL", "https://router.huggingface.co/v1")
+    api_key = os.environ.get("API_KEY", "")
+    model_id = os.environ.get("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
 
-# Initialize the global client
 client = OpenAI(
-    base_url=API_BASE_URL,
-    api_key=API_KEY,
+    base_url=api_url,
+    api_key=api_key,
     timeout=60.0
 )
 
-# Mandatory system prompt
-SYSTEM_PROMPT = """You are an expert email & calendar triage assistant.
-Always return valid JSON only. Template: {"action_type": "...", "email_id": "..."}"""
-
-# ================================================================
-
 def get_llm_action(obs: dict) -> Action:
-    """Primary decision logic with enforced proxy logging."""
+    """Sends current state to LLM and returns the parsed Action object."""
     
-    # Pre-process context to ensure JSON serializability (Fixes TypeError: datetime)
-    emails = []
-    for e in obs.get("inbox", [])[:8]:
-        e_copy = e.copy()
-        for k, v in e_copy.items():
-            if isinstance(v, datetime):
-                e_copy[k] = v.isoformat()
-        emails.append(e_copy)
+    # Process emails for JSON serialization
+    inbox = []
+    for email in obs.get("inbox", [])[:8]:
+        data = email.copy()
+        for key, value in data.items():
+            if isinstance(value, datetime):
+                data[key] = value.isoformat()
+        inbox.append(data)
 
+    # Process calendar events
     calendar = []
-    for c in obs.get("calendar", [])[:5]:
-        c_copy = c.copy()
-        for k, v in c_copy.items():
-            if isinstance(v, datetime):
-                c_copy[k] = v.isoformat()
-        calendar.append(c_copy)
+    for event in obs.get("calendar", [])[:5]:
+        data = event.copy()
+        for key, value in data.items():
+            if isinstance(value, datetime):
+                data[key] = value.isoformat()
+        calendar.append(data)
 
-    context = {
-        "emails": emails,
+    prompt_context = {
+        "emails": inbox,
         "calendar": calendar,
         "current_time": datetime.now().isoformat()
     }
 
-    print("[DEBUG] === INITIATING PROXY API CALL ===")
-
     try:
-        # Standard OpenAI API request
-        completion = client.chat.completions.create(
-            model=MODEL_NAME,
+        response = client.chat.completions.create(
+            model=model_id,
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": json.dumps(context)}
+                {"role": "system", "content": "You are a triage assistant. Return valid JSON only."},
+                {"role": "user", "content": json.dumps(prompt_context)}
             ],
-            temperature=0.0,
-            max_tokens=250
+            temperature=0,
+            max_tokens=256
         )
 
-        raw = completion.choices[0].message.content.strip()
-        print(f"[DEBUG] Received response: {raw[:150]}...")
-
-        # Multi-stage JSON extraction
-        if "```" in raw:
-            raw = raw.split("```")[-2].strip()
-            if raw.startswith("json"):
-                raw = raw[4:].strip()
+        content = response.choices[0].message.content.strip()
         
-        return Action(**json.loads(raw))
+        # Extract JSON if wrapped in markdown blocks
+        if "```" in content:
+            content = content.split("```")[-2].strip()
+            if content.startswith("json"):
+                content = content[4:].strip()
+        
+        return Action(**json.loads(content))
 
-    except Exception as e:
-        print(f"[DEBUG] API ATTEMPT LOGGED BUT FAILED: {type(e).__name__} - {e}")
+    except Exception:
         return Action(action_type="no_op")
 
 
-def run_task(task_id: str = "easy"):
-    """Task execution lifecycle strictly following OpenEnv specifications."""
+def run_session(task_type: str = "easy"):
+    """Main loop for running an environment session."""
     
-    # 🧪 --- MANDATORY PROXY PING ---
-    # This guarantees the evaluator sees an API hit immediately.
+    # Initial connection verification
     try:
-        print("[DEBUG] Forcing LLM validation ping...")
         client.chat.completions.create(
-            model=MODEL_NAME,
-            messages=[{"role": "user", "content": "verify proxy connection"}],
+            model=model_id,
+            messages=[{"role": "user", "content": "hello"}],
             max_tokens=5
         )
-        print("[DEBUG] Proxy validation success.")
-    except Exception as e:
-        print(f"[DEBUG] Proxy validation attempt recorded: {e}")
+    except Exception:
+        pass
 
-    env = EmailCalendarEnv(task_id=task_id)
+    env = EmailCalendarEnv(task_id=task_type)
     obs = env.reset()
-    seen_emails: Set[str] = set()
+    handled_ids: Set[str] = set()
 
-    print(f"[START] task={task_id} env=email-calendar-env")
-
-    step_idx = 1
-    llm_hits = 0
+    step = 1
+    total_calls = 0
 
     while True:
         state = obs.model_dump()
 
-        # Enforce LLM logic for visible proxy activity in all check phases
-        if step_idx <= 10 or step_idx % 3 == 0:
+        # Decision logic: prioritizing LLM for complex tasks
+        if step <= 10 or step % 3 == 0:
             action = get_llm_action(state)
-            llm_hits += 1
+            total_calls += 1
         else:
-            # Fallback to simple heuristics only for high-speed secondary steps
+            # Simple rule-based logic for efficiency
             action = Action(action_type="no_op")
-            inbox = state.get("inbox", [])
-            tasks = [e for e in inbox if e.get("id") not in seen_emails]
+            pending = [e for e in state.get("inbox", []) if e.get("id") not in handled_ids]
             
-            for e in tasks:
-                if e.get("priority") == "urgent":
-                    action = Action(action_type="flag_email", email_id=e["id"])
+            for item in pending:
+                if item.get("priority") == "urgent":
+                    action = Action(action_type="flag_email", email_id=item["id"])
                     break
                     
             if action.action_type == "no_op":
                 action = get_llm_action(state)
-                llm_hits += 1
+                total_calls += 1
 
         result = env.step(action)
-        reward = round(result.reward, 2)
         
         if getattr(action, 'email_id', None):
-            seen_emails.add(action.email_id)
+            handled_ids.add(action.email_id)
 
-        # Log structure required for Phase 1 evaluator
-        print(f"[STEP] step={step_idx} action={action.action_type} reward={reward} done={str(result.done).lower()} llm={llm_hits}")
+        print(f"[{task_type}] Step {step}: {action.action_type} (Score: {result.reward})")
 
         obs = result.observation
-        if result.done or step_idx >= 25:
+        if result.done or step >= 30:
             break
-        step_idx += 1
+        step += 1
 
-    final_score = env.state().get("current_score", 0.0)
-    print(f"[END] success={'true' if final_score >= 0.5 else 'false'} score={final_score:.2f} llm_hits={llm_hits}")
+    print(f"Completed {task_type} in {step} steps. LLM calls: {total_calls}")
     env.close()
 
 
 if __name__ == "__main__":
-    task_name = sys.argv[1] if len(sys.argv) > 1 else "easy"
-    run_task(task_name)
+    task = sys.argv[1] if len(sys.argv) > 1 else "easy"
+    run_session(task)

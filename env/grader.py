@@ -1,6 +1,7 @@
 from typing import List, Dict, Any
 
 class EasyTaskGrader:
+    """Grader for simple triage tasks involving flagging and archiving."""
     def __init__(self, task_data: dict):
         self.task_data = task_data
         self.expected = self._build_expected()
@@ -22,7 +23,7 @@ class EasyTaskGrader:
         archive_score = len(archived & set(self.expected["archive"])) / max(len(self.expected["archive"]), 1)
         reply_score = len(replied & set(self.expected["reply"])) / max(len(self.expected["reply"]), 1)
         
-        # Penalties for wrong actions
+        # Deduction for incorrect operations
         wrong_flags = len(flagged - set(self.expected["flag"])) * 0.05
         wrong_archives = len(archived - set(self.expected["archive"])) * 0.05
         
@@ -31,6 +32,7 @@ class EasyTaskGrader:
 
 
 class MediumTaskGrader:
+    """Grader for tasks involving email management and calendar scheduling."""
     def __init__(self, task_data: dict):
         self.task_data = task_data
     
@@ -40,7 +42,6 @@ class MediumTaskGrader:
         return min(1.0, email_score * 0.5 + calendar_score * 0.5)
     
     def _score_emails(self, actions):
-        # Same logic as easy but with 25 emails
         emails = self.task_data["emails"]
         expected_flag = [e["id"] for e in emails if e["priority"] == "urgent"]
         expected_archive = [e["id"] for e in emails if e["category"] == "spam"]
@@ -61,8 +62,8 @@ class MediumTaskGrader:
     
     def _count_conflicts(self, events):
         import datetime
-        conflicts = 0
         from dateutil.parser import parse
+        conflicts = 0
         for i, e1 in enumerate(events):
             start1 = parse(str(e1["start"]))
             end1 = parse(str(e1["end"]))
@@ -75,6 +76,7 @@ class MediumTaskGrader:
 
 
 class HardTaskGrader:
+    """Complex grader for high-volume tasks with VIP priorities and deadlines."""
     def __init__(self, task_data: dict):
         self.task_data = task_data
     
@@ -125,3 +127,18 @@ class HardTaskGrader:
             return 1.0
         handled = {a["email_id"] for a in actions if a["action_type"] in ("reply_email", "delegate_email") and a["email_id"] in deadline_ids}
         return len(handled) / len(deadline_ids)
+
+def grade_easy(task_data: dict, agent_actions: List[Dict]) -> float:
+    """Calculates score for the easy task category."""
+    grader = EasyTaskGrader(task_data)
+    return grader.score(agent_actions)
+
+def grade_medium(task_data: dict, agent_actions: List[Dict], final_calendar: List[Dict]) -> float:
+    """Calculates score for the medium task category."""
+    grader = MediumTaskGrader(task_data)
+    return grader.score(agent_actions, final_calendar)
+
+def grade_hard(task_data: dict, agent_actions: List[Dict], final_calendar: List[Dict], step_history: List[Dict]) -> float:
+    """Calculates score for the hard task category."""
+    grader = HardTaskGrader(task_data)
+    return grader.score(agent_actions, final_calendar, step_history)
