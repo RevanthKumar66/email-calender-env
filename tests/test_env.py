@@ -6,7 +6,7 @@ def test_reset():
     env = EmailCalendarEnv("easy")
     obs = env.reset()
     assert obs.task_id == "easy"
-    assert len(obs.inbox) == 10
+    assert len(obs.inbox_emails) == 10
 
 def test_step():
     env = EmailCalendarEnv("easy")
