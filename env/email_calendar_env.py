@@ -68,8 +68,16 @@ class EmailCalendarEnv:
             "inbox_size": len(self._inbox),
             "calendar_size": len(self._calendar_events),
             "actions_taken": len(self._actions_taken),
-            "current_score": self._compute_score()
+            "current_score": self.score()
         }
+
+    def score(self) -> float:
+        """Returns the current task score, strictly bounded (0.01, 0.99)."""
+        return self._compute_score()
+
+    def grade(self) -> float:
+        """Alias for score(), used by some OpenEnv validators."""
+        return self.score()
 
     def close(self):
         self._done = True
