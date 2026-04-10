@@ -203,17 +203,20 @@ class EmailCalendarEnv:
 
     def _compute_score(self) -> float:
         if not self._task_data:
-            return 0.0
+            return 0.05
         
-        from env.grader import grade_easy, grade_medium, grade_hard
+        from env.grader import grade_easy, grade_medium, grade_hard, safe_score
         
         if self.task_id == "easy":
-            return grade_easy(self._task_data, self._actions_taken)
+            s = grade_easy(self._task_data, self._actions_taken)
         elif self.task_id == "medium":
-            return grade_medium(self._task_data, self._actions_taken, [e.model_dump() for e in self._calendar_events])
+            s = grade_medium(self._task_data, self._actions_taken, [e.model_dump() for e in self._calendar_events])
         elif self.task_id == "hard":
-            return grade_hard(self._task_data, self._actions_taken, [e.model_dump() for e in self._calendar_events], self._actions_taken)
-        return 0.0
+            s = grade_hard(self._task_data, self._actions_taken, [e.model_dump() for e in self._calendar_events], self._actions_taken)
+        else:
+            s = 0.5
+            
+        return safe_score(s)
 
     def _is_complete(self) -> bool:
         if self.task_id == "easy":
