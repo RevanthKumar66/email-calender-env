@@ -23,8 +23,8 @@ class CalendarEvent(BaseModel):
     timezone: str
 
 class Observation(BaseModel):
-    inbox: List[Email]
-    calendar: List[CalendarEvent]
+    inbox_emails: List[Email]
+    calendar_events: List[CalendarEvent]
     current_step: int
     max_steps: int
     task_id: str

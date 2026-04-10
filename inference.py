@@ -28,14 +28,14 @@ def get_llm_action(obs: dict) -> Action:
     """Sends state to LLM and returns Action."""
     # Data sanitization for JSON
     inbox = []
-    for email in obs.get("inbox", [])[:8]:
+    for email in obs.get("inbox_emails", [])[:8]:
         data = email.copy()
         for k, v in data.items():
             if isinstance(v, datetime): data[k] = v.isoformat()
         inbox.append(data)
 
     calendar = []
-    for event in obs.get("calendar", [])[:5]:
+    for event in obs.get("calendar_events", [])[:5]:
         data = event.copy()
         for k, v in data.items():
             if isinstance(v, datetime): data[k] = v.isoformat()

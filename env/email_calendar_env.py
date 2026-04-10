@@ -224,8 +224,8 @@ class EmailCalendarEnv:
 
     def _build_observation(self, score_so_far: float) -> Observation:
         return Observation(
-            inbox=self._inbox,
-            calendar=self._calendar_events,
+            inbox_emails=self._inbox,
+            calendar_events=self._calendar_events,
             current_step=self._step_count,
             max_steps=self._task_data.get("max_steps", 50) if self._task_data else 50,
             task_id=self.task_id,
