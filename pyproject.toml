@@ -21,5 +21,8 @@ dependencies = [
 [project.scripts]
 server = "server.app:main"
 
+[project.entry-points."openenv.environments"]
+email-calendar-env = "env.email_calendar_env:EmailCalendarEnv"
+
 [tool.setuptools]
 packages = ["env", "server"]
