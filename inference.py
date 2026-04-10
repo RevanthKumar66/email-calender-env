@@ -8,8 +8,8 @@ from env.models import Action
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv(override=True)
+# Load environment variables from .env file (do NOT override system environment)
+load_dotenv()
 
 # ── Environment Variables & LLM Client ─────────────────────────────────────────
 API_BASE_URL = os.getenv("API_BASE_URL")
@@ -19,7 +19,7 @@ MODEL_NAME   = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
 # Fallback for local development or HuggingFace Spaces
 if not API_BASE_URL or not API_KEY:
     API_BASE_URL = "https://router.huggingface.co/v1"
-    API_KEY = os.getenv("HF_TOKEN")
+    API_KEY      = os.getenv("HF_TOKEN")
 
 client = OpenAI(
     base_url=API_BASE_URL,
