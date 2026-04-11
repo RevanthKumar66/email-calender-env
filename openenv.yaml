@@ -9,10 +9,13 @@ tags:
 tasks:
   - id: easy
     description: "Process urgent emails"
+    grader: "env.grader:grade_easy"
   - id: medium
     description: "Handle replies and scheduling"
+    grader: "env.grader:grade_medium"
   - id: hard
     description: "Full email and calendar workflow"
+    grader: "env.grader:grade_hard"
 observation_space:
   type: dict
   fields:

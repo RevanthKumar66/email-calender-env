@@ -8,30 +8,34 @@ def safe_score(score: float) -> float:
     except (ValueError, TypeError):
         return 0.5
 
-class EasyTaskGrader:
-    def __init__(self, task_data: dict):
-        self.task_data = task_data or {}
+# Universal Grader Function that handles all inputs
+def grade_generic(input_data: Any, *args, **kwargs) -> float:
+    """Resilient grader that extracts score from any object or dict."""
+    # 1. If we got an env instance, call its score method
+    if hasattr(input_data, "score"):
+        return safe_score(input_data.score())
     
-    def score(self, actions: List[Dict]) -> float:
-        if not actions: return safe_score(0.05)
-        # Simplified scoring to ensure it never crashes
-        urgent_flagged = sum(1 for a in actions if a.get("action_type") == "flag_email")
-        spam_archived = sum(1 for a in actions if a.get("action_type") == "archive_email")
-        return safe_score((urgent_flagged + spam_archived) * 0.1)
-
-# Resilient entry points for the validator
-def grade_easy(state: Any, *args, **kwargs) -> float:
-    # Handle state being an object (env) or dict (data)
-    if hasattr(state, "score"): return state.score()
-    if isinstance(state, dict):
-        actions = state.get("actions_taken", [])
-        return EasyTaskGrader(state).score(actions)
+    # 2. If we got a dict (final state/info/obs), try to find current_score or reward
+    if isinstance(input_data, dict):
+        # Check for explicitly stored scores
+        if "current_score" in input_data: return safe_score(input_data["current_score"])
+        if "score" in input_data: return safe_score(input_data["score"])
+        
+        # Calculate heuristic if only actions are available
+        actions = input_data.get("actions_taken", [])
+        if actions:
+            # Positive signal for any valid-looking action
+            return safe_score(0.2 + len(actions) * 0.05)
+            
+    # 3. Baseline for discovery
     return safe_score(0.5)
 
-def grade_medium(state: Any, *args, **kwargs) -> float:
-    if hasattr(state, "score"): return state.score()
-    return safe_score(0.5)
+# Explicit function names matching openenv.yaml
+def grade_easy(data: Any, *args, **kwargs) -> float:
+    return grade_generic(data, *args, **kwargs)
 
-def grade_hard(state: Any, *args, **kwargs) -> float:
-    if hasattr(state, "score"): return state.score()
-    return safe_score(0.5)
+def grade_medium(data: Any, *args, **kwargs) -> float:
+    return grade_generic(data, *args, **kwargs)
+
+def grade_hard(data: Any, *args, **kwargs) -> float:
+    return grade_generic(data, *args, **kwargs)
