@@ -2,10 +2,10 @@ from fastapi import FastAPI, HTTPException
 from env.email_calendar_env import EmailCalendarEnv
 from env.models import Action, Observation, StepResult
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+# load_dotenv()
 
 app = FastAPI(title="Email-Calendar OpenEnv", version="1.0.0")
 
