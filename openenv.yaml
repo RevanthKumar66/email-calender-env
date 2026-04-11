@@ -6,19 +6,22 @@ tags:
   - openenv
   - email
   - calendar
+  - scheduling
+  - productivity
+  - real-world
 tasks:
-  - id: easy
+  - id: "easy"
     name: "Simple Inbox Triage"
-    difficulty: easy
-    description: "Triage 10 emails into correct folders and flag urgent ones."
-  - id: medium
+    description: "Process urgent emails"
+    grader: "env.grader:grade_easy"
+  - id: "medium"
     name: "Inbox + Meeting Scheduling"
-    difficulty: medium
-    description: "Triage 25 emails and schedule 5 meetings respecting timezone constraints."
-  - id: hard
+    description: "Handle replies and scheduling"
+    grader: "env.grader:grade_medium"
+  - id: "hard"
     name: "Full Workday Simulation"
-    difficulty: hard
-    description: "Handle 50 emails, schedule 10 meetings, manage conflicts, respond to VIP threads, and meet 3 deadlines."
+    description: "Full email and calendar workflow"
+    grader: "env.grader:grade_hard"
 observation_space:
   type: dict
   fields:
