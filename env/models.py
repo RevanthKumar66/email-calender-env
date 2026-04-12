@@ -23,9 +23,9 @@ class CalendarEvent(BaseModel):
     timezone: str
 
 class Observation(BaseModel):
-    # Reverting to 'inbox' and 'calendar' as used in successful commit f1ba478
-    inbox: List[Email]
-    calendar: List[CalendarEvent]
+    # Standardized formal names for 100% compliance
+    inbox_emails: List[Email]
+    calendar_events: List[CalendarEvent]
     current_step: int
     max_steps: int
     task_id: str
