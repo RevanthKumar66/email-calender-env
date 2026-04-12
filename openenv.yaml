@@ -3,22 +3,29 @@ version: "1.0.0"
 description: "Email + Calendar Assistant"
 tasks:
   - id: easy
-    description: "Triage urgent emails"
+    name: "Simple Inbox Triage"
+    difficulty: "Easy"
+    description: "Triage urgent emails into correct folders."
     grader: "env.grader:grade_easy"
   - id: medium
-    description: "Handle replies and meetings"
+    name: "Inbox + Meeting Scheduling"
+    difficulty: "Medium"
+    description: "Manage replies and schedule meetings."
     grader: "env.grader:grade_medium"
   - id: hard
-    description: "Full workday management"
+    name: "Full Workday Simulation"
+    difficulty: "Hard"
+    description: "Handle high-volume email and calendar conflicts."
     grader: "env.grader:grade_hard"
 observation_space:
   type: dict
-  # Standardized names
   fields:
     - inbox_emails
     - calendar_events
     - current_step
+    - task_id
     - task_objective
+    - score_so_far
 action_space:
   type: discrete_parametric
   actions:
