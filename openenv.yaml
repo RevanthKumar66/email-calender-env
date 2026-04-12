@@ -2,38 +2,39 @@ name: email-calendar-env
 version: "1.0.0"
 description: "Email + Calendar Assistant"
 tasks:
-  - id: easy
+  - id: "task_easy"
     name: "Simple Inbox Triage"
-    difficulty: "Easy"
+    difficulty: "easy"
     description: "Triage urgent emails into correct folders."
     grader: "env.grader:grade_easy"
-  - id: medium
+  - id: "task_medium"
     name: "Inbox + Meeting Scheduling"
-    difficulty: "Medium"
+    difficulty: "medium"
     description: "Manage replies and schedule meetings."
     grader: "env.grader:grade_medium"
-  - id: hard
+  - id: "task_hard"
     name: "Full Workday Simulation"
-    difficulty: "Hard"
+    difficulty: "hard"
     description: "Handle high-volume email and calendar conflicts."
     grader: "env.grader:grade_hard"
 observation_space:
-  type: dict
+  type: "dict"
   fields:
-    - inbox_emails
-    - calendar_events
-    - current_step
-    - task_id
-    - task_objective
-    - score_so_far
+    - "inbox_emails"
+    - "calendar_events"
+    - "current_step"
+    - "max_steps"
+    - "task_id"
+    - "task_objective"
+    - "score_so_far"
 action_space:
-  type: discrete_parametric
+  type: "discrete_parametric"
   actions:
-    - archive_email
-    - flag_email
-    - reply_email
-    - delegate_email
-    - schedule_meeting
-    - decline_meeting
-    - no_op
+    - "archive_email"
+    - "flag_email"
+    - "reply_email"
+    - "delegate_email"
+    - "schedule_meeting"
+    - "decline_meeting"
+    - "no_op"
 reward_range: [-1.0, 1.0]

@@ -98,5 +98,5 @@ def run_task(task_id: str = "easy"):
     env.close()
 
 if __name__ == "__main__":
-    task_input = sys.argv[1] if len(sys.argv) > 1 else "easy"
+    task_input = sys.argv[1] if len(sys.argv) > 1 else "task_easy"
     run_task(task_input)
